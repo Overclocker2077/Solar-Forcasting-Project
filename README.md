@@ -4,5 +4,5 @@ By creating a polynomial regression predictive model, this project aims to provi
 <br />
 <br />
 <br />
-The blue line represents the line of best fit below room temperature and the red line represents the line of best fit above room temperature
+The blue line represents the line of best fit below room temperature and the red line represents the line of best fit above room temperature.
 ![plot](https://github.com/Overclocker2077/Solar-Panel-Research-Project/blob/main/Screenshot%202024-11-28%20091100.png)
