@@ -8,6 +8,6 @@ This shows the line of best fit to the 4th degree
 <br />
 <br />
 Note: the blue line represents the line of best fit below room temperature and the red line represents the line of best fit above room temperature.<br />
-Equation for the blue line:  $2.846e-13 x^4 - 1.69e-09 x^3 + 2.597e-06 x^2 + 0.0009267 x + 1.678$ <br />
-Equation for the red line:  $1.91e-13 x^4 - 7.155e-10 x^3 - 3.771e-07 x^2 + 0.003924 x + 0.5564$<br />
+Expression for the blue line:  $2.846e-13 x^4 - 1.69e-09 x^3 + 2.597e-06 x^2 + 0.0009267 x + 1.678$ <br />
+Expression for the red line:  $1.91e-13 x^4 - 7.155e-10 x^3 - 3.771e-07 x^2 + 0.003924 x + 0.5564$<br />
 
