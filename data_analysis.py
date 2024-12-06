@@ -10,7 +10,7 @@ sns.set_theme()
 
 # pre: 2d array of strings 
 # post: returns a string array with the column names and a dictionary with the colomn name pair with the data in that column
-def cleanData(array) -> tuple[dict[str, list[float]]]:
+def cleanData(array) -> dict[str, list[float]]:
     column_names = array.pop(0)
     table = {}
     for name in column_names:
