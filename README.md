@@ -4,7 +4,7 @@ By creating a polynomial regression predictive model, this project aims to provi
 <br />
 <br />
 This shows the line of best fit to the 4th degree
-![plot](https://github.com/Overclocker2077/Solar-Panel-Research-Project/blob/main/Screenshot%202024-11-28%20091100.png)
+![plot]([https://github.com/Overclocker2077/Solar-Panel-Research-Project/blob/main/Screenshot%202024-11-28%20091100.png](https://github.com/Overclocker2077/Solar-Panel-Research-Project/blob/main/Figure_1_below_at_room_temp.png))
 <br />
 <br />
 Note: the blue line represents the line of best fit below room temperature and the red line represents the line of best fit above room temperature. And the color table to the right represents the temperature points<br />
