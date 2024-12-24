@@ -10,7 +10,8 @@ sns.set_theme()
 
 # pre: 2d array of strings 
 # post: returns a string array with the column names and a dictionary with the colomn name pair with the data in that column
-def cleanData(array) -> dict[str, list[float]]:
+def convertDataFrame(dataframe) -> dict[str, list[float]]:
+    array = dataframe.to_numpy().tolist()
     column_names = array.pop(0)
     table = {}
     for name in column_names:
@@ -35,10 +36,9 @@ def split_filter(dict, target_index, key_index, split_func = lambda x : x > 65) 
 
 columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
 raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
-dataset = raw_dataset.to_numpy().tolist()
 # sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
 # pr(dataset)
-data_table = cleanData(dataset)
+data_table = convertDataFrame(raw_dataset)
 
 """# pr(columns)
 # pr(data_table)
