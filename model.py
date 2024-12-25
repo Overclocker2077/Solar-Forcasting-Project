@@ -43,7 +43,7 @@ def split_filter(dict, target_index, key_index, split_func = lambda x : x > 65 a
             array3.append(dict[target_index][i])
     return array1, array2, array3
 
-def Polynomial_regression(degree: int = 1) -> tuple[np.poly1d, np.poly1d, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def Polynomial_regression(degree: int = 1) -> tuple[np.poly1d, np.poly1d, np.ndarray, np.ndarray, np.poly1d, np.ndarray]:
     fc_room, fc_below, fc_above = split_filter(dict = data_table, target_index=columns[2], key_index=columns[3])
     dcv_room, dcv_below, dcv_above = split_filter(dict = data_table, target_index=columns[4], key_index=columns[3])
     
@@ -110,6 +110,13 @@ class Polynomial_Prediction_Model():
             layers.Dense(10, activation='relu'),  # using polynomial regession 
             layers.Dense(units=1)
         ])
+        
+        model.predict(self.train_features[:10])
+        
+        # print(type(self.train_features[:10]))
+        print(self.model.layers[1].kernel)
+
+
 
         self.model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
@@ -127,17 +134,27 @@ class Polynomial_Prediction_Model():
         return history
     
     def predict(self, features):
+        if (self.model == None):
+            raise AttributeError("You must compile before calling the predict method.")
         return self.model.predict(features)
 
-    @staticmethod
-    def plot_loss(history):
-        plt.plot(history.history['loss'], label='loss')
+    def plot_loss(self, history):
+        #plt.plot(history.history['loss'], label='loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.ylim([0, 10])
         plt.xlabel('Epoch')
-        plt.ylabel('Error ')
+        plt.ylabel(f'Error {self.predict_column}')
         plt.legend()
         plt.grid(True)
+
+
+    def plot(self, x,y, name = "Data"):
+        plt.scatter(self.df["Fc"], self.df[self.predict_column], label = name)
+        plt.scatter(x, y, color = "Orange", label = "Predictions")
+        plt.ylim(0,6)
+        plt.ylabel("Energy Output (DCV)")
+        plt.xlabel("Light Intensity (Fc)")
+        plt.legend()
 
 columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
 raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
@@ -145,13 +162,21 @@ raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
 # sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
 # pr(dataset)
 data_table = convertDataFrame(raw_dataset)
-df = pd.DataFrame.from_dict(data_table)
-
+df_raw = pd.DataFrame.from_dict(data_table)
+df = df_raw.copy()
 print(df)
 
 model = Polynomial_Prediction_Model(df, columns[4])
 history = model.compile()
-Polynomial_Prediction_Model.plot_loss(history)
+model.plot_loss(history)
+
+# df_raw.drop(columns[4], axis = 1, inplace=True)  # axis = 1 refers to columns and 0 refers to rows
+# predictions = model.predict(df_raw)
+
+# print(df_raw)
+
+# model.plot(x = df_raw["Fc"], y = predictions) 
+
 plt.show()
 
 # res = model.predict(model.train_features[:10])
