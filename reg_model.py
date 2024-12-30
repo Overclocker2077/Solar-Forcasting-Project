@@ -45,46 +45,6 @@ def split_filter(dict, target_index, key_index, split_func = lambda x : x > 65 a
             array3.append(dict[target_index][i])
     return array1, array2, array3
 
-def Polynomial_regression(degree: int = 1) -> tuple[np.poly1d, np.poly1d, np.ndarray, np.ndarray, np.poly1d, np.ndarray]:
-    fc_room, fc_below, fc_above = split_filter(dict = data_table, target_index=columns[2], key_index=columns[3])
-    dcv_room, dcv_below, dcv_above = split_filter(dict = data_table, target_index=columns[4], key_index=columns[3])
-    
-    model_room_temp = np.poly1d(np.polyfit(x = fc_room,  y = dcv_room, deg = degree))
-    polyline_room_temp = np.linspace(1, 4000, 50)
-
-    model_above_temp = np.poly1d(np.polyfit(x = fc_above,  y = dcv_above, deg = degree))
-    polyline_above_temp = np.linspace(1, 4000, 50)
-
-    model_below_temp = np.poly1d(np.polyfit(x = fc_below,  y = dcv_below, deg = degree))
-    polyline_below_temp = np.linspace(1, 4000, 50)
-
-    return model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp, model_above_temp, polyline_above_temp
-
-def plot_data():
-    model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp, model_above_temp, polyline_above_temp = Polynomial_regression(4)
-    
-    #model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp = Logarithmic_regression()
-
-    plt.scatter(x = data_table[columns[2]], y = data_table[columns[4]], label='Data', c = data_table[columns[3]], cmap="turbo")
-    plt.plot(polyline_room_temp, model_room_temp(polyline_room_temp), color = "Orange")
-    plt.plot(polyline_below_temp, model_below_temp(polyline_below_temp), color = "Blue")
-    plt.plot(polyline_above_temp, model_above_temp(polyline_above_temp), color = "Red")
-    print(model_below_temp)
-    print(model_room_temp)
-    print(model_above_temp)
-    color_bar = plt.colorbar()
-    color_bar.set_label("Temperature (F)")
-    plt.xlabel('Light Intensity (Fc)')
-    plt.ylabel('Energy Output (DCV)')
-    plt.legend()
-    plt.grid(True)
-
-# plot_data()
-
-# plt.title('Solar Panel Data') 
-# plt.show()
-
-
 class Polynomial_Prediction_Model():
 
     def __init__(self, df, predict_column, degree):
@@ -129,6 +89,22 @@ class Polynomial_Prediction_Model():
             return self.model.predict(x_poly)
         raise AttributeError("Must compile the model before calling predict.")
 
+    def calc_loss(self, output_prediction: np.ndarray) -> tuple[np.ndarray[float], float]:
+        output_prediction = output_prediction.tolist()
+        loss = []
+        total = 0    
+        for i in range(len(output_prediction)):
+            loss.append([abs(float(self.df["DCV Output"].iloc[i]) - float(output_prediction[i])), i])
+            total += loss[i][0]
+        avg_loss = total / len(loss)
+
+        loss.sort(key = lambda e : self.df["TempF"].iloc[e[1]])
+        
+        for i in range(len(loss)):
+            loss[i].pop()
+
+        return np.array(loss), avg_loss
+    
     def save(self, model_name):
         ...
 
@@ -157,16 +133,6 @@ class Polynomial_Prediction_Model():
         plt.legend()
         plt.grid(True)
         
-    def calc_loss(self, output_prediction) -> tuple[np.ndarray[float], float]:
-        output_prediction = output_prediction.tolist()
-        loss = []
-        total = 0    
-        for i in range(len(output_prediction)):
-            loss.append(abs(float(df["DCV Output"].iloc[i]) - float(output_prediction[i])))
-            total += loss[i]
-        avg_loss = total / len(loss)
-
-        return np.array(loss), avg_loss
 
 
 if (__name__ == "__main__"):
@@ -183,19 +149,55 @@ if (__name__ == "__main__"):
     model = Polynomial_Prediction_Model(df, columns[4], 4)
     model.compile()
     y_prediction = model.predict(model.input_features)
-    #print(y_prediction)
-    # print(y_prediction.shape)
     # print(model.input_features.shape)
     # model.plot(x = model.df["Fc"], y = y_prediction)
 
     loss, avg_loss = model.calc_loss(y_prediction)
     print(loss)
     print(f"Avg loss: {avg_loss}")
-    
-    model.plot_loss(loss)
+    print()
+    print(model.predict(np.array([[45, 0, 1100, 78]])))
+
+    #model.plot_loss(loss)
 
     plt.show()
 
 # 4th degree Avg loss: 0.11494852884846171
 # 5th degree Avg loss: 0.058064411397904046
 # 6th degree Avg loss: 0.46999121531433935
+
+def Polynomial_regression(degree: int = 1) -> tuple[np.poly1d, np.poly1d, np.ndarray, np.ndarray, np.poly1d, np.ndarray]:
+    fc_room, fc_below, fc_above = split_filter(dict = data_table, target_index=columns[2], key_index=columns[3])
+    dcv_room, dcv_below, dcv_above = split_filter(dict = data_table, target_index=columns[4], key_index=columns[3])
+    
+    model_room_temp = np.poly1d(np.polyfit(x = fc_room,  y = dcv_room, deg = degree))
+    polyline_room_temp = np.linspace(1, 4000, 50)
+
+    model_above_temp = np.poly1d(np.polyfit(x = fc_above,  y = dcv_above, deg = degree))
+    polyline_above_temp = np.linspace(1, 4000, 50)
+
+    model_below_temp = np.poly1d(np.polyfit(x = fc_below,  y = dcv_below, deg = degree))
+    polyline_below_temp = np.linspace(1, 4000, 50)
+
+    return model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp, model_above_temp, polyline_above_temp
+
+def plot_data():
+    model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp, model_above_temp, polyline_above_temp = Polynomial_regression(4)
+    
+    #model_below_temp, model_room_temp, polyline_below_temp, polyline_room_temp = Logarithmic_regression()
+
+    plt.scatter(x = data_table[columns[2]], y = data_table[columns[4]], label='Data', c = data_table[columns[3]], cmap="turbo")
+    plt.plot(polyline_room_temp, model_room_temp(polyline_room_temp), color = "Orange")
+    plt.plot(polyline_below_temp, model_below_temp(polyline_below_temp), color = "Blue")
+    plt.plot(polyline_above_temp, model_above_temp(polyline_above_temp), color = "Red")
+    print(model_below_temp)
+    print(model_room_temp)
+    print(model_above_temp)
+    color_bar = plt.colorbar()
+    color_bar.set_label("Temperature (F)")
+    plt.xlabel('Light Intensity (Fc)')
+    plt.ylabel('Energy Output (DCV)')
+    plt.legend()
+    plt.grid(True)
+    #print(y_prediction)
+    # print(y_prediction.shape)
