@@ -130,7 +130,7 @@ class Polynomial_Prediction_Model():
         avg_loss_values_sorted = [[0, 0], [0, 0], [0, 0]]  # categorize the data
         for i in range(len(output_prediction)):
             loss_val = abs(float(self.df["DCV Output"].iloc[i]) - float(output_prediction[i]))
-            loss.append(loss)
+            loss.append(loss_val)
             if (self.df["Fc"].iloc[i] < 750):
                 avg_loss_values_sorted[0][0] += loss_val
                 avg_loss_values_sorted[0][1] += 1
