@@ -45,123 +45,6 @@ def split_filter(dict, target_index, key_index, split_func = lambda x : x > 65 a
             array3.append(dict[target_index][i])
     return array1, array2, array3
 
-class Polynomial_Prediction_Model():
-
-    def __init__(self, df, predict_column, degree):
-        self.df = df
-        self.degree = degree
-        self.columns = df.columns.tolist()
-        self.columns.pop(4)
-        self.predict_column = predict_column
-
-        self.input_features = df[self.columns].values
-        self.output_feature = df[self.predict_column].values
-        self.model = None
-        self.x_poly = None
-
-        # self.train_dataset = df.sample(frac=0.8, random_state=0)
-        # self.test_dataset = df.drop(self.train_dataset.index)
-        # self.train_features = self.train_dataset.copy()
-        # self.test_features = self.test_dataset.copy()
-        # self.train_labels = self.train_features.pop(self.predict_column)
-        # self.test_labels = self.test_features.pop(self.predict_column)
-        # self.model = None
-
-    # Pre: Normaization axis automatically set to -1, epochs set to 100 
-    # Post: train and returns training history 
-    def compile(self, axis = -1):
-        if (self.model == None):
-            self.poly = PolynomialFeatures(degree = self.degree, include_bias = False)
-            self.x_poly = self.poly.fit_transform(self.input_features)
-
-            X_train, X_test, y_train, y_test = train_test_split(self.x_poly, self.output_feature, test_size=0.2, random_state=42)
-
-            self.model = LinearRegression()
-            self.model.fit(self.x_poly, self.output_feature)
-        else:
-            raise AttributeError("Model has already been compiled.")
-    
-    def predict(self, features: np.ndarray):
-        if (self.model != None):
-            poly = PolynomialFeatures(degree = self.degree, include_bias = False)
-            x_poly = poly.fit_transform(features)
-
-            return self.model.predict(x_poly)
-        raise AttributeError("Must compile the model before calling predict.")
-
-    def calc_loss(self, output_prediction: np.ndarray) -> tuple[np.ndarray[float], float]:
-        output_prediction = output_prediction.tolist()
-        loss = []
-        total = 0    
-        for i in range(len(output_prediction)):
-            loss.append([abs(float(self.df["DCV Output"].iloc[i]) - float(output_prediction[i])), i])
-            total += loss[i][0]
-        avg_loss = total / len(loss)
-
-        loss.sort(key = lambda e : self.df["TempF"].iloc[e[1]])
-        
-        for i in range(len(loss)):
-            loss[i].pop()
-
-        return np.array(loss), avg_loss
-    
-    def save(self, model_name):
-        ...
-
-    def load(self, path):
-        ...
-
-    def summary(self):
-        ...
-
-    def plot(self, x,y, name = "Data"):
-        plt.scatter(self.df["Fc"], self.df[self.predict_column], label = name)
-        plt.scatter(x, y, color="Orange", label = "Predictions")
-        plt.ylim(0,6)
-        plt.colorbar()
-        plt.ylabel("Energy Output (DCV)")
-        plt.xlabel("Light Intensity (Fc)")
-        plt.legend()
-    
-    def plot_loss(self, loss: np.ndarray[float]):
-        x = [i for i in range(len(loss))]
-        plt.scatter(x, loss, label='val_loss points')
-        plt.plot(loss, label='val_loss')
-        plt.ylim([0, 10])
-        plt.xlabel('Tests Data')
-        plt.ylabel(f'Error |prediction - actual|')
-        plt.legend()
-        plt.grid(True)
-        
-
-
-if (__name__ == "__main__"):
-    columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
-    raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
-
-    # sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
-    # pr(dataset)
-    data_table = convertDataFrame(raw_dataset)
-    df_raw = pd.DataFrame.from_dict(data_table)
-    df = df_raw.copy()
-    #print(df)
-
-    model = Polynomial_Prediction_Model(df, columns[4], 4)
-    model.compile()
-    y_prediction = model.predict(model.input_features)
-    # print(model.input_features.shape)
-    # model.plot(x = model.df["Fc"], y = y_prediction)
-
-    loss, avg_loss = model.calc_loss(y_prediction)
-    print(loss)
-    print(f"Avg loss: {avg_loss}")
-    print()
-    print(model.predict(np.array([[45, 0, 1100, 78]])))
-
-    #model.plot_loss(loss)
-
-    plt.show()
-
 # 4th degree Avg loss: 0.11494852884846171
 # 5th degree Avg loss: 0.058064411397904046
 # 6th degree Avg loss: 0.46999121531433935
@@ -201,3 +84,133 @@ def plot_data():
     plt.grid(True)
     #print(y_prediction)
     # print(y_prediction.shape)
+
+
+class Polynomial_Prediction_Model():
+
+    def __init__(self, df, predict_column, degree):
+        self.df = df
+        self.degree = degree
+        self.columns = df.columns.tolist()
+        self.columns.pop(4)
+        self.predict_column = predict_column
+
+        self.input_features = df[self.columns].values
+        self.output_feature = df[self.predict_column].values
+        self.model = None
+        self.x_poly = None
+
+    # Pre: Normaization axis automatically set to -1, epochs set to 100 
+    # Post: train and returns training history 
+    def compile(self, axis = -1):
+        if (self.model == None):
+            self.poly = PolynomialFeatures(degree = self.degree, include_bias = False)
+            self.x_poly = self.poly.fit_transform(self.input_features)
+
+            X_train, X_test, y_train, y_test = train_test_split(self.x_poly, self.output_feature, test_size=0.2, random_state=42)
+
+            self.model = LinearRegression()
+            self.model.fit(self.x_poly, self.output_feature)
+        else:
+            raise AttributeError("Model has already been compiled.")
+    
+    def predict(self, features: np.ndarray):
+        if (self.model != None):
+            poly = PolynomialFeatures(degree = self.degree, include_bias = False)
+            x_poly = poly.fit_transform(features)
+
+            return self.model.predict(x_poly)
+        raise AttributeError("Must compile the model before calling predict.")
+
+    def calc_loss(self, output_prediction: np.ndarray) -> tuple[np.ndarray[float], float]:
+        output_prediction : list = output_prediction.tolist()
+        loss = []
+        total = 0    
+                     #low  med  high
+        avg_loss_values_sorted = [[0, 0], [0, 0], [0, 0]]  # categorize the data
+        for i in range(len(output_prediction)):
+            loss_val = abs(float(self.df["DCV Output"].iloc[i]) - float(output_prediction[i]))
+            loss.append(loss)
+            if (self.df["Fc"].iloc[i] < 750):
+                avg_loss_values_sorted[0][0] += loss_val
+                avg_loss_values_sorted[0][1] += 1
+            elif (self.df["Fc"].iloc[i] < 1500):
+                avg_loss_values_sorted[1][0] += loss_val
+                avg_loss_values_sorted[1][1] += 1
+            else:
+                avg_loss_values_sorted[2][0] += loss_val
+                avg_loss_values_sorted[2][1] += 1
+
+            total += loss_val
+        avg_loss = total / len(loss)
+        avg_loss_low = avg_loss_values_sorted[0][0] / avg_loss_values_sorted[0][1]
+        avg_loss_med = avg_loss_values_sorted[1][0] / avg_loss_values_sorted[1][1] 
+        avg_loss_high = avg_loss_values_sorted[2][0] / avg_loss_values_sorted[2][1] 
+
+        # loss.sort(key = lambda e : self.df["Fc"].iloc[e[1]])
+        
+        # for i in range(len(loss)):
+        #     loss[i].pop()
+    
+        return [avg_loss_low, avg_loss_med , avg_loss_high], avg_loss
+    
+    def save(self, model_name):
+        ...
+
+    def load(self, path):
+        ...
+
+    def summary(self):
+        ...
+
+    def plot(self, x,y, name = "Data"):
+        plt.scatter(self.df["Fc"], self.df[self.predict_column], label = name)
+        plt.scatter(x, y, color="Orange", label = "Predictions")
+        plt.ylim(0,6)
+        plt.colorbar()
+        plt.ylabel("Energy Output (DCV)")
+        plt.xlabel("Light Intensity (Fc)")
+        plt.legend()
+    
+    def plot_loss(self, loss: np.ndarray[float]):
+        # x = [i for i in range(len(loss))]
+        # # plt.scatter(x, loss, label='val_loss points')
+        # plt.plot(loss, label='Loss Value')
+        plt.bar(["Low (0 - 750)", "Medium (750 - 1500)", "High (> 1500)"], loss)
+        plt.ylim([0, 0.3])
+        plt.title("Average Loss Value: Categorized by light intensity")
+        plt.xlabel('Light Intensity (Fc)')
+        plt.ylabel(f'Abs. Prediction Error (DCV)')
+        plt.legend()
+        plt.grid(True)
+        
+
+
+if (__name__ == "__main__"):
+    columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
+    raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
+
+    # sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
+    # pr(dataset)
+    data_table = convertDataFrame(raw_dataset)
+    df_raw = pd.DataFrame.from_dict(data_table)
+    df = df_raw.copy()
+    #print(df)
+
+    model = Polynomial_Prediction_Model(df, columns[4], 4)
+    model.compile()
+    y_prediction = model.predict(model.input_features)
+    # print(model.input_features.shape)
+    # model.plot(x = model.df["Fc"], y = y_prediction)
+
+    loss, avg_loss = model.calc_loss(y_prediction)
+    print(loss)
+    print(f"Avg loss: {avg_loss}")
+    model.plot_loss(loss)
+    # print()
+    # print(model.predict(np.array([[45, 0, 1100, 115]])))
+    # print(model.model.coef_)
+    # print(model.model.intercept_)
+
+
+    plt.show()
