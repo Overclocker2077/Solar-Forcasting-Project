@@ -51,7 +51,7 @@ The scatter plot helps visualize the relationship between light intensity, tempe
 
 
 
-
+## Sources
 https://www.gridx.ai/knowledge/what-is-solar-power-forecasting#solar-forecasting-methodsnbsp
 
 https://www.statology.org/polynomial-regression-python/
