@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import os
 from rich import print as pr
 
 np.set_printoptions(precision=3, suppress=True)
@@ -84,7 +85,7 @@ def plot_data():
 
 
 
-class Polynomial_Prediction_Model():
+class DNN_Prediction_Model():
 
     def __init__(self, df, predict_column):
         self.df = df
@@ -100,43 +101,60 @@ class Polynomial_Prediction_Model():
     # Pre: Normaization axis automatically set to -1, epochs set to 100 
     # Post: train and returns training history 
     def compile(self, axis = -1, epochs = 100):
-        np_train_features = np.array(self.train_features)
-        normalizer = layers.Normalization(axis=axis)
-        normalizer.adapt(np_train_features)
+        if (self.model == None):
+            np_train_features = np.array(self.train_features)
+            normalizer = layers.Normalization(axis=axis)
+            normalizer.adapt(np_train_features)
 
-        # This is temporary and will be ajusted to a polynomial regression model
-        self.model = tf.keras.Sequential([
-            normalizer,
-            layers.Dense(10, activation='relu'),  # using polynomial regession 
-            layers.Dense(units=1)
-        ])
-        
-        model.predict(self.train_features[:10])
-        
-        # print(type(self.train_features[:10]))
-        print(self.model.layers[1].kernel)
+            # This is temporary and will be ajusted to a polynomial regression model
+            self.model = tf.keras.Sequential([
+                normalizer,
+                layers.Dense(10, activation='relu'),  # using polynomial regession 
+                layers.Dense(units=1)
+            ])
+            
+            # model.predict(self.train_features[:10])
+            
+            # print(type(self.train_features[:10]))
+            print(self.model.layers[1].kernel)
 
 
 
-        self.model.compile(
-            optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
-            loss='mean_absolute_error')
-        
-        history = self.model.fit(
-            self.train_features,
-            self.train_labels,
-            epochs=epochs,
-            # Suppress logging.
-            verbose=0,
-            # Calculate validation results on 20% of the training data.
-            validation_split = 0.2)
+            self.model.compile(
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+                loss='mean_absolute_error')
+            
+            history = self.model.fit(
+                self.train_features,
+                self.train_labels,
+                epochs=epochs,
+                # Suppress logging.
+                verbose=0,
+                # Calculate validation results on 20% of the training data.
+                validation_split = 0.2)
 
-        return history
+            return history
+        raise AttributeError("Model has already been load; There is no need to compile it.")
     
     def predict(self, features):
         if (self.model == None):
             raise AttributeError("You must compile before calling the predict method.")
         return self.model.predict(features)
+    
+    def save(self, model_name):
+        if (not os.path.isdir("saved_model")):
+            os.mkdir("saved_model")
+
+        if (self.model != None):
+            self.model.save(f"saved_model/{model_name}.keras")
+        else:
+            raise AttributeError("There is no model to save")
+
+    def load(self, path):
+        self.model = tf.keras.models.load_model(path)
+
+    def summary(self):
+        return self.model.summary()
 
     def plot_loss(self, history):
         #plt.plot(history.history['loss'], label='loss')
@@ -147,37 +165,40 @@ class Polynomial_Prediction_Model():
         plt.legend()
         plt.grid(True)
 
-
     def plot(self, x,y, name = "Data"):
-        plt.scatter(self.df["Fc"], self.df[self.predict_column], label = name)
-        plt.scatter(x, y, color = "Orange", label = "Predictions")
+       # plt.scatter(self.df["Fc"], self.df[self.predict_column], c = self.df[columns[0]], label = name)
+        plt.scatter(x, y, c = self.df[columns[3]], label = "Predictions")
         plt.ylim(0,6)
+        plt.colorbar()
         plt.ylabel("Energy Output (DCV)")
         plt.xlabel("Light Intensity (Fc)")
         plt.legend()
 
-columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
-raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
 
-# sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
-# pr(dataset)
-data_table = convertDataFrame(raw_dataset)
-df_raw = pd.DataFrame.from_dict(data_table)
-df = df_raw.copy()
-print(df)
+if (__name__ == "__main__"):
+    columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
+    raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
 
-model = Polynomial_Prediction_Model(df, columns[4])
-history = model.compile()
-model.plot_loss(history)
+    # sorted_dataset = raw_dataset.sort_values(by=[columns[4]], ascending=True)
+    # pr(dataset)
+    data_table = convertDataFrame(raw_dataset)
+    df_raw = pd.DataFrame.from_dict(data_table)
+    df = df_raw.copy()
+    print(df)
 
-# df_raw.drop(columns[4], axis = 1, inplace=True)  # axis = 1 refers to columns and 0 refers to rows
-# predictions = model.predict(df_raw)
+    model = DNN_Polynomial_Prediction_Model(df, columns[4])
+    history = model.compile()
+    # model.plot_loss(history)
+    model.save("solar_model")
+    model.summary()
+    # df_raw.drop(columns[4], axis = 1, inplace=True)  # axis = 1 refers to columns and 0 refers to rows
+    # predictions = model.predict(df_raw)
 
-# print(df_raw)
+    # print(df_raw)
 
-# model.plot(x = df_raw["Fc"], y = predictions) 
+    # model.plot(x = df_raw["Fc"], y = predictions) 
 
-plt.show()
+    plt.show()
 
 # res = model.predict(model.train_features[:10])
 # print(res)
