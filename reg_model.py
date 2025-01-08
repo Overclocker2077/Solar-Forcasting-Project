@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import os
+import random
 from rich import print as pr
 
 np.set_printoptions(precision=3, suppress=True)
@@ -114,7 +115,7 @@ class Polynomial_Prediction_Model():
         else:
             raise AttributeError("Model has already been compiled.")
     
-    def predict(self, features: np.ndarray):
+    def predict(self, features: np.ndarray) -> np.ndarray:
         if (self.model != None):
             poly = PolynomialFeatures(degree = self.degree, include_bias = False)
             x_poly = poly.fit_transform(features)
@@ -126,7 +127,7 @@ class Polynomial_Prediction_Model():
         output_prediction : list = output_prediction.tolist()
         loss = []
         total = 0    
-                     #low  med  high
+                                   #low     med    high
         avg_loss_values_sorted = [[0, 0], [0, 0], [0, 0]]  # categorize the data
         for i in range(len(output_prediction)):
             loss_val = abs(float(self.df["DCV Output"].iloc[i]) - float(output_prediction[i]))
@@ -176,17 +177,103 @@ class Polynomial_Prediction_Model():
         # x = [i for i in range(len(loss))]
         # # plt.scatter(x, loss, label='val_loss points')
         # plt.plot(loss, label='Loss Value')
-        plt.bar(["Low (0 - 750)", "Medium (750 - 1500)", "High (> 1500)"], loss)
+        plt.bar(["Low (0 - 750)", "Medium (750 - 1500)", "High (> 1500)", "Total Avg Loss"], loss)
         plt.ylim([0, 0.3])
         plt.title("Average Loss Value: Categorized by light intensity")
         plt.xlabel('Light Intensity (Fc)')
         plt.ylabel(f'Abs. Prediction Error (DCV)')
         plt.legend()
         plt.grid(True)
-        
+
+def generate_weather_data(**args) -> dict:
+
+    # Winter = W, Spring = P, SUmer = S, Fall = F
+    year = {  "WJanuary": [[] for _ in range(31)], 
+                "WFebruary": [[] for _ in range(28)],
+                "PMarch": [[] for _ in range(31)],
+                "PApril": [[] for _ in range(30)], 
+                "PMay": [[] for _ in range(31)],
+                "SJune": [[] for _ in range(30)],
+                "SJuly": [[] for _ in range(31)],
+                "SAugust": [[] for _ in range(31)],
+                "FSeptember": [[] for _ in range(30)],
+                "FOctober": [[] for _ in range(31)],
+                "FNovember": [[] for _ in range(30)],
+                "WDecember": [[] for _ in range(31)]
+            }
+    
+    temp_change = args["temp_change"]
+    winter_temp = args["winter"]
+    spring_temp = args["spring"]
+    summer_temp = args["summer"]
+    fall_temp = args["fall"]
+    
+    fc_change = args["fc_change"]
+    winter_fc = args["winterfc"]
+    spring_fc = args["springfc"]
+    summer_fc = args["summerfc"]
+    fall_fc = args["fallfc"]
+
+    verical_angle = 45
+    horizontal_angle = 0
+
+    for k, v in year.items():
+        if (k[0] == "W"):
+            for i in range(len(v)):
+                # [verical_angle, horizontal_angle, fc,  temp]
+                v[i].append(verical_angle)
+                v[i].append(horizontal_angle)
+                v[i].append(random.randint(winter_fc - fc_change, winter_fc + fc_change))
+                v[i].append(random.randint(winter_temp - temp_change, winter_temp + temp_change))
+        elif (k[0] == "P"):
+            for i in range(len(v)):
+                v[i].append(verical_angle)
+                v[i].append(horizontal_angle)
+                v[i].append(random.randint(spring_fc - fc_change, spring_fc + fc_change))
+                v[i].append(random.randint(spring_temp - temp_change, spring_temp + temp_change))
+        elif (k[0] == "S"):
+            for i in range(len(v)):
+                v[i].append(verical_angle)
+                v[i].append(horizontal_angle)
+                v[i].append(random.randint(summer_fc - fc_change, summer_fc + fc_change))
+                v[i].append(random.randint(summer_temp - temp_change, summer_temp + temp_change))
+        elif (k[0] == "F"):
+            for i in range(len(v)):
+                v[i].append(verical_angle)
+                v[i].append(horizontal_angle)
+                v[i].append(random.randint(fall_fc - fc_change, fall_fc + fc_change))
+                v[i].append(random.randint(fall_temp - temp_change, fall_temp + temp_change))
+
+    return year
 
 
-if (__name__ == "__main__"):
+# weather = generate_weather_data(  temp_change = 13,
+#                         winter = 30,
+#                         spring = 68,
+#                         summer = 88,
+#                         fall = 60,
+#                         fc_change = 800,
+#                         winterfc = 900,
+#                         springfc = 1500,
+#                         summerfc = 2000,
+#                         fallfc = 1300
+#                              )
+
+# pr(weather)
+
+if (__name__ == "__main__1"):
+    weather = generate_weather_data(  temp_change = 13,
+                        winter = 30,
+                        spring = 68,
+                        summer = 88,
+                        fall = 60,
+                        fc_change = 800,
+                        winterfc = 900,
+                        springfc = 1500,
+                        summerfc = 2000,
+                        fallfc = 1300
+                             )
+    
     columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
     raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
 
@@ -205,10 +292,11 @@ if (__name__ == "__main__"):
 
     loss, avg_loss = model.calc_loss(y_prediction)
     print(loss)
+    loss.append(avg_loss)
     print(f"Avg loss: {avg_loss}")
-    model.plot_loss(loss)
+    #model.plot_loss(loss)
     # print()
-    # print(model.predict(np.array([[45, 0, 1100, 115]])))
+    print(model.predict(np.array([[45, 0, 2000, 30]])))
     # print(model.model.coef_)
     # print(model.model.intercept_)
 
