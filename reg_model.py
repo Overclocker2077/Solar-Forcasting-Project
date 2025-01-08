@@ -185,6 +185,8 @@ class Polynomial_Prediction_Model():
         plt.legend()
         plt.grid(True)
 
+
+# Used to make yearly predictions
 def generate_weather_data(**args) -> dict:
 
     # Winter = W, Spring = P, SUmer = S, Fall = F
@@ -223,8 +225,8 @@ def generate_weather_data(**args) -> dict:
                 # [verical_angle, horizontal_angle, fc,  temp]
                 v[i].append(verical_angle)
                 v[i].append(horizontal_angle)
-                v[i].append(random.randint(winter_fc - fc_change, winter_fc + fc_change))
-                v[i].append(random.randint(winter_temp - temp_change, winter_temp + temp_change))
+                v[i].append(random.randint(winter_fc - fc_change, winter_fc + (fc_change - 150)))
+                v[i].append(random.randint(winter_temp - temp_change, winter_temp + (temp_change - 10)))
         elif (k[0] == "P"):
             for i in range(len(v)):
                 v[i].append(verical_angle)
@@ -246,6 +248,74 @@ def generate_weather_data(**args) -> dict:
 
     return year
 
+def yearly_predictions(weather, avg = True) -> dict:
+    weather_predictions = {}
+    for k, v in weather.items():
+        current_month = k[1:len(k)] # Remove the prefix
+        weather_predictions[current_month] = []
+        total = 0
+        for i in range(len(v)):
+            if (avg):
+                total += model.predict(np.array([v[i]])).tolist()[0]
+            else:
+                weather_predictions[current_month].append(model.predict(np.array([v[i]])).tolist()[0])
+        if (avg):
+            weather_predictions[current_month] = total / len(v)
+    return weather_predictions
+
+def get_weather_avg(weather: dict) -> dict:
+    weather_avg = {}
+    for k, v in weather.items():
+        current_month = k[1:len(k)] # Remove the prefix
+        weather_avg[current_month] = []
+
+        total_fc = 0
+        total_temp = 0
+        for i in range(0, len(v)):
+            total_fc += v[i][2]
+            total_temp += v[i][3]
+        weather_avg[current_month] = [total_fc / len(v[i]), total_temp / len(v[i])]
+    return weather_avg
+
+def yearly_predictions_scatter(weather):
+    ...
+
+def bar_graph_yearly(solar_forcast: dict):
+    # figure, axis = plt.subplots(2,2)
+    plt.bar(solar_forcast.keys(), solar_forcast.values())
+    plt.set_title("Yearly Solar Forcast")
+    plt.set_xlabel("Months")
+    plt.set_ylabel("Energy Output (DCV)")
+    plt.legend()
+    plt.grid(True)
+
+def avg_fc_bar_graph(weather: dict):  
+    fc_values = [l[0] for l in weather.values()]
+
+    plt.bar(weather.keys(), fc_values)
+    plt.set_title("Avg Light Intensity (Fc)")
+    plt.set_xlabel("Months")
+    plt.set_ylabel("Light Intensity (Fc)")
+    plt.legend()
+    plt.grid(True)
+
+def avg_temp_bar_graph(weather: dict):
+    temp_values = [l[1] for l in weather.values()]
+    plt.bar(weather.keys(), temp_values)
+    plt.set_title("Avg Temperature (F)")
+    plt.set_xlabel("Months")
+    plt.set_ylabel("Temperature (F)")
+    plt.legend()
+    plt.grid(True)
+
+def plot_yearly(solar_forcast: dict):
+    values = []
+    for l in solar_forcast.values():
+        values += l
+    plt.plot(values)
+    plt.ylabel("Energy Output (DCV)")
+    plt.xlabel("Daily prediction (Fc)")
+    plt.legend()
 
 # weather = generate_weather_data(  temp_change = 13,
 #                         winter = 30,
@@ -261,18 +331,7 @@ def generate_weather_data(**args) -> dict:
 
 # pr(weather)
 
-if (__name__ == "__main__1"):
-    weather = generate_weather_data(  temp_change = 13,
-                        winter = 30,
-                        spring = 68,
-                        summer = 88,
-                        fall = 60,
-                        fc_change = 800,
-                        winterfc = 900,
-                        springfc = 1500,
-                        summerfc = 2000,
-                        fallfc = 1300
-                             )
+if (__name__ == "__main__"):
     
     columns = ["Vertical Angle", "Horizontal Angle", "Fc", "TempF", "DCV Output"]
     raw_dataset = pd.read_csv("Solar Panel Data - Sheet1.csv", names=columns)
@@ -290,15 +349,43 @@ if (__name__ == "__main__1"):
     # print(model.input_features.shape)
     # model.plot(x = model.df["Fc"], y = y_prediction)
 
-    loss, avg_loss = model.calc_loss(y_prediction)
-    print(loss)
-    loss.append(avg_loss)
-    print(f"Avg loss: {avg_loss}")
+    # loss, avg_loss = model.calc_loss(y_prediction)
+    # print(loss)
+    # loss.append(avg_loss)
+    # print(f"Avg loss: {avg_loss}")
     #model.plot_loss(loss)
+
+
     # print()
-    print(model.predict(np.array([[45, 0, 2000, 30]])))
+    # print(model.predict(np.array([[45, 0, 2000, 30]])))
     # print(model.model.coef_)
     # print(model.model.intercept_)
 
+    weather = generate_weather_data(  temp_change = 20,
+                        winter = 28,
+                        spring = 68,
+                        summer = 95,
+                        fall = 60,
+                        fc_change = 800,
+                        winterfc = 900,
+                        springfc = 1500,
+                        summerfc = 2000,
+                        fallfc = 1300
+                             )
+
+    solar_forcast = yearly_predictions(weather, avg = True)
+    
+    pr(solar_forcast)
+  
+    avg_weather = get_weather_avg(weather)
+    print()
+    print()
+    print()
+    pr(avg_weather)
+
+    #bar_graph_yearly(solar_forcast)
+    #avg_fc_bar_graph(avg_weather)
+
+    #plot_yearly(solar_forcast)
 
     plt.show()
