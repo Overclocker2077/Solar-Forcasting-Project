@@ -274,39 +274,39 @@ def get_weather_avg(weather: dict) -> dict:
         for i in range(0, len(v)):
             total_fc += v[i][2]
             total_temp += v[i][3]
-        weather_avg[current_month] = [total_fc / len(v[i]), total_temp / len(v[i])]
+        weather_avg[current_month] = [total_fc / len(v), total_temp / len(v)]
     return weather_avg
 
 def yearly_predictions_scatter(weather):
     ...
 
-def bar_graph_yearly(solar_forcast: dict):
+def bar_graph_yearly(solar_forcast: dict, plot):
     # figure, axis = plt.subplots(2,2)
-    plt.bar(solar_forcast.keys(), solar_forcast.values())
-    plt.set_title("Yearly Solar Forcast")
-    plt.set_xlabel("Months")
-    plt.set_ylabel("Energy Output (DCV)")
-    plt.legend()
-    plt.grid(True)
+    plot.bar(solar_forcast.keys(), solar_forcast.values())
+    plot.set_title("Monthly Solar Forcast")
+    plot.set_xlabel("Months")
+    plot.set_ylabel("Energy Output (DCV)")
+    #plot.legend()
+    plot.grid(True)
 
-def avg_fc_bar_graph(weather: dict):  
+def avg_fc_bar_graph(weather: dict, plot):  
     fc_values = [l[0] for l in weather.values()]
 
-    plt.bar(weather.keys(), fc_values)
-    plt.set_title("Avg Light Intensity (Fc)")
-    plt.set_xlabel("Months")
-    plt.set_ylabel("Light Intensity (Fc)")
-    plt.legend()
-    plt.grid(True)
+    plot.bar(weather.keys(), fc_values)
+    plot.set_title("Avg Light Intensity (Fc)")
+    plot.set_xlabel("Months")
+    plot.set_ylabel("Light Intensity (Fc)")
+    #plot.legend()
+    plot.grid(True)
 
-def avg_temp_bar_graph(weather: dict):
+def avg_temp_bar_graph(weather: dict, plot):
     temp_values = [l[1] for l in weather.values()]
-    plt.bar(weather.keys(), temp_values)
-    plt.set_title("Avg Temperature (F)")
-    plt.set_xlabel("Months")
-    plt.set_ylabel("Temperature (F)")
-    plt.legend()
-    plt.grid(True)
+    plot.bar(weather.keys(), temp_values)
+    plot.set_title("Avg Temperature (F)")
+    plot.set_xlabel("Months")
+    plot.set_ylabel("Temperature (F)")
+   # plot.legend()
+    plot.grid(True)
 
 def plot_yearly(solar_forcast: dict):
     values = []
@@ -315,7 +315,7 @@ def plot_yearly(solar_forcast: dict):
     plt.plot(values)
     plt.ylabel("Energy Output (DCV)")
     plt.xlabel("Daily prediction (Fc)")
-    plt.legend()
+    #plt.legend()
 
 # weather = generate_weather_data(  temp_change = 13,
 #                         winter = 30,
@@ -365,27 +365,28 @@ if (__name__ == "__main__"):
                         winter = 28,
                         spring = 68,
                         summer = 95,
-                        fall = 60,
+                        fall = 59,
                         fc_change = 800,
                         winterfc = 900,
                         springfc = 1500,
-                        summerfc = 2000,
-                        fallfc = 1300
+                        summerfc = 2300,
+                        fallfc = 1500
                              )
 
     solar_forcast = yearly_predictions(weather, avg = True)
-    
+    #solar_forcast = 
+
     pr(solar_forcast)
   
     avg_weather = get_weather_avg(weather)
-    print()
-    print()
-    print()
     pr(avg_weather)
+    #avg_weather = 
 
-    #bar_graph_yearly(solar_forcast)
-    #avg_fc_bar_graph(avg_weather)
-
+    figures, axis = plt.subplots(3,1)
+    bar_graph_yearly(solar_forcast, axis[0])
+    avg_fc_bar_graph(avg_weather, axis[1])
+    avg_temp_bar_graph(avg_weather, axis[2])
     #plot_yearly(solar_forcast)
-
+    #plt.tight_layout(pad=0.2, h_pad=0.05, w_pad=0.2)
+    plt.subplots_adjust(wspace=0.5, hspace=0.5)
     plt.show()
