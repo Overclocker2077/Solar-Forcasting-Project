@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import os
 import random
+import pickle
 from rich import print as pr
 
 np.set_printoptions(precision=3, suppress=True)
@@ -156,13 +157,18 @@ class Polynomial_Prediction_Model():
         return [avg_loss_low, avg_loss_med , avg_loss_high], avg_loss
     
     def save(self, model_name):
-        ...
+        if (not os.path.isdir("saved_models")):
+            os.mkdir("saved_models")
+
+        with open(f"saved_models/{model_name}.pkl", "wb") as file:
+            pickle.dump(self.model, file)
 
     def load(self, path):
-        ...
+        with open(path, "rb") as file:
+            self.model = pickle.load(file)
 
     def summary(self):
-        ...
+        return self.model.get_params()
 
     def plot(self, x,y, name = "Data"):
         plt.scatter(self.df["Fc"], self.df[self.predict_column], label = name)
@@ -225,7 +231,7 @@ def generate_weather_data(**args) -> dict:
                 # [verical_angle, horizontal_angle, fc,  temp]
                 v[i].append(verical_angle)
                 v[i].append(horizontal_angle)
-                v[i].append(random.randint(winter_fc - fc_change, winter_fc + (fc_change - 150)))
+                v[i].append(random.randint(winter_fc - fc_change, winter_fc))
                 v[i].append(random.randint(winter_temp - temp_change, winter_temp + (temp_change - 10)))
         elif (k[0] == "P"):
             for i in range(len(v)):
@@ -283,7 +289,7 @@ def yearly_predictions_scatter(weather):
 def bar_graph_yearly(solar_forcast: dict, plot):
     # figure, axis = plt.subplots(2,2)
     plot.bar(solar_forcast.keys(), solar_forcast.values())
-    plot.set_title("Monthly Solar Forcast")
+    plot.set_title("Monthly Solar Forecast")
     plot.set_xlabel("Months")
     plot.set_ylabel("Energy Output (DCV)")
     #plot.legend()
@@ -346,20 +352,23 @@ if (__name__ == "__main__"):
     model = Polynomial_Prediction_Model(df, columns[4], 4)
     model.compile()
     y_prediction = model.predict(model.input_features)
-    # print(model.input_features.shape)
-    # model.plot(x = model.df["Fc"], y = y_prediction)
+    print(model.summary())
+    model.save("solar_forecast_model")
+    
+    print(model.input_features.shape)
+    model.plot(x = model.df["Fc"], y = y_prediction)
 
-    # loss, avg_loss = model.calc_loss(y_prediction)
-    # print(loss)
-    # loss.append(avg_loss)
-    # print(f"Avg loss: {avg_loss}")
-    #model.plot_loss(loss)
+    loss, avg_loss = model.calc_loss(y_prediction)
+    print(loss)
+    loss.append(avg_loss)
+    print(f"Avg loss: {avg_loss}")
+    model.plot_loss(loss)
 
 
-    # print()
-    # print(model.predict(np.array([[45, 0, 2000, 30]])))
-    # print(model.model.coef_)
-    # print(model.model.intercept_)
+    print()
+    print(model.predict(np.array([[45, 0, 2000, 30]])))
+    print(model.model.coef_)
+    print(model.model.intercept_)
 
     weather = generate_weather_data(  temp_change = 20,
                         winter = 28,
@@ -373,20 +382,19 @@ if (__name__ == "__main__"):
                         fallfc = 1500
                              )
 
-    solar_forcast = yearly_predictions(weather, avg = True)
+    solar_forcast = yearly_predictions(weather, avg = False)
     #solar_forcast = 
 
     pr(solar_forcast)
   
     avg_weather = get_weather_avg(weather)
     pr(avg_weather)
-    #avg_weather = 
+    # avg_weather = 
 
     figures, axis = plt.subplots(3,1)
     bar_graph_yearly(solar_forcast, axis[0])
     avg_fc_bar_graph(avg_weather, axis[1])
     avg_temp_bar_graph(avg_weather, axis[2])
-    #plot_yearly(solar_forcast)
-    #plt.tight_layout(pad=0.2, h_pad=0.05, w_pad=0.2)
+    
     plt.subplots_adjust(wspace=0.5, hspace=0.5)
     plt.show()
