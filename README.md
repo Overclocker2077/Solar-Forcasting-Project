@@ -36,7 +36,7 @@ Results: loss  value graph and data graph
 The bar graph shows the average loss value sorted by light intensity. The loss value is calculated by taking the difference of the predicted value and actual value (predicted  - actual). The loss value is useful for determining the accuracy of the prediction model. On the graph, the y axis shows loss/expected error and the x axis shows the light intensity categories ranging from low, medium and high. The last bar on the graph labeled “Total Avg Loss” doesn’t fall under any light intensity category and is the sum of the average loss values across all light intensities.
 
  ## Relationship between Temperature and Output
-![plot](https://github.com/Overclocker2077/Solar-Forcasting-Project/blob/main/Screenshot 2025-03-23 191314.png)
+![plot](https://github.com/Overclocker2077/Solar-Forcasting-Project/blob/main/Screenshot2025-03-23191314.png)
 
 The scatter plot shows the relationship between light intensity (Fc) on the x-axis and energy output (DCV) on the y-axis. Each point on the graph is color-coded according to the color bar displayed on the right. Blue represents cold temperatures below 55°F, green corresponds to mid-range temperatures (around room temperature), and red indicates high temperatures.
 Additionally, the three lines on the graph are also color-coded using the same color scheme. The blue line represents the line of best fit for data points below room temperature, the green line corresponds to the line of best fit at room temperature, and the red line represents the line of best fit for points above room temperature.
