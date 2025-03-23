@@ -13,13 +13,14 @@ Predicting a solar panel's energy output also known as solar power forecasting i
 A polynomial regression model can be used to accurately predict the energy output of a solar panel under various conditions. 
 
 
-## Procedure and Materials: 
+## Procedure: 
 Gather data on the solar panel under different conditions.
 Create a polynomial regression model in python.
 Train model on collected data.
 Get historical weather data on different regions of the United States 
 Use the model to determine which region will have the best average solar panel efficiency throughout the whole year.
 
+## Apparatus
 Solar panel
 Photometer 
 Voltage meter 
