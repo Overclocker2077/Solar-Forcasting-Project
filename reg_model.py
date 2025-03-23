@@ -48,7 +48,7 @@ def split_filter(dict, target_index, key_index, split_func = lambda x : x > 65 a
     return array1, array2, array3
 
 # 4th degree Avg loss: 0.11494852884846171
-# 5th degree Avg loss: 0.058064411397904046
+# 5th degree Avg loss: 0.58064411397904046
 # 6th degree Avg loss: 0.46999121531433935
 
 def Polynomial_regression(degree: int = 1) -> tuple[np.poly1d, np.poly1d, np.ndarray, np.ndarray, np.poly1d, np.ndarray]:
